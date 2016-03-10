@@ -16,6 +16,7 @@ namespace DatExplorer
     public partial class MainConsole : Form
     {
         DataTable dt = new DataTable();
+        String sortValue;
 
         public MainConsole()
         {
@@ -91,12 +92,14 @@ namespace DatExplorer
                     dt.Rows.Add(dr);
                 }
                 file.Close();
-                dt.DefaultView.RowFilter = string.Format("[Control number] like '%{0}%'", textBoxFilter.Text);
+                dt.DefaultView.RowFilter = string.Format("[Control number] like '%{0}%'", textBox_OptFile.Text);
 
 
 
                 textBoxCounts.Text = String.Format("Total Records {0} --- Filtered Records {1}", dt.Rows.Count -1, dt.DefaultView.Count-1);
 
+                label_CountDat.Text = String.Format("{0}",dt.Rows.Count - 1);
+                label_CountDat.ForeColor = System.Drawing.Color.Green;
 
                 dataGridViewMain.DataSource = dt;
                 foreach (DataGridViewColumn column in dataGridViewMain.Columns)
@@ -174,7 +177,7 @@ namespace DatExplorer
             /*
             the sort is still moving the filter row.  Need to add a post sort trigger and a tag to locate the record and move it back to the top
             also need to freeze the top row and shade the filter
-    */
+    
             try
             {
                 if (e.RowIndex1 == 0)
@@ -186,7 +189,7 @@ namespace DatExplorer
             catch (Exception ex)
             {
                 ex.ToString();
-            }
+            }*/
         }
 
         private void grid_RowNumber(object sender, DataGridViewRowsAddedEventArgs e)
@@ -194,10 +197,10 @@ namespace DatExplorer
             this.dataGridViewMain.Rows[e.RowIndex].Cells[0].Value = this.dataGridViewMain.Rows.Count;
         }
 
-        private void dataGridViewMain_Sorted(object sender, EventArgs e)
-        {
-
-        }
+//        private void dataGridViewMain_Sorted(object sender, EventArgs e)
+//        {
+//
+//        }
 
         private void dataGridViewMain_ColumnHeaderMouseClick(object sender,
                                                   DataGridViewCellMouseEventArgs e)
@@ -219,19 +222,33 @@ namespace DatExplorer
             dr[0]["sortMe"] = 0;
 
             String sortString = "sortMe asc,[" + col + "]";
-            MessageBox.Show(dt.DefaultView.Sort.ToString());
+            //MessageBox.Show(dt.DefaultView.Sort.ToString());
 
             //if (dt.DefaultView.Sort.ToString().Equals(col))
-            if (dataGridViewMain.Columns[1].HeaderCell.SortGlyphDirection.Equals(SortOrder.Ascending))
+            //if (dataGridViewMain.Columns[1].HeaderCell.SortGlyphDirection.Equals(SortOrder.Ascending))
+            if (String.IsNullOrEmpty(sortValue) || !sortValue.Equals(col))
             {//then this means its another click on that field so switch to asc
                 //sortString.Replace("] desc", "] desc");
-                dt.DefaultView.Sort = sortString + " desc";
-                dataGridViewMain.Columns[1].HeaderCell.SortGlyphDirection = SortOrder.Descending;
-            }
-            else //if //(dataGridViewMain.Columns[col].HeaderCell.SortGlyphDirection.Equals(SortOrder.Descending))
-            {
                 dt.DefaultView.Sort = sortString + " asc";
-                dataGridViewMain.Columns[1].HeaderCell.SortGlyphDirection = SortOrder.Ascending;
+                dataGridViewMain.Columns[col].HeaderCell.SortGlyphDirection = SortOrder.Ascending;
+                sortValue = col;
+            //    MessageBox.Show("Sort is asc");
+            }
+            //else if (dataGridViewMain.Columns[col].HeaderCell.SortGlyphDirection.Equals(SortOrder.Descending))
+            else if (sortValue.Equals(col))
+            {
+                dt.DefaultView.Sort = sortString + " desc";
+                dataGridViewMain.Columns[col].HeaderCell.SortGlyphDirection = SortOrder.Descending;
+                sortValue = col + "desc";
+            //    MessageBox.Show("sort is desc");
+            }
+            //else if (dataGridViewMain.Columns[col].HeaderCell.SortGlyphDirection.Equals(SortOrder.None))
+            else 
+            {
+                dt.DefaultView.Sort = "";
+                dataGridViewMain.Columns[col].HeaderCell.SortGlyphDirection = SortOrder.None;
+            //    MessageBox.Show("sort unset :" + sortString);
+                sortValue = null;
             }
             //  dt.DefaultView.Sort.ToString().Contains("] asc"))
             //{
@@ -246,7 +263,17 @@ namespace DatExplorer
             dataGridViewMain.ResumeLayout();
 
             //MessageBox.Show(dataGridViewMain.SortOrder.ToString());
-            MessageBox.Show(dt.DefaultView.Sort.ToString());
+            //MessageBox.Show(dt.DefaultView.Sort.ToString());
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void label2_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
